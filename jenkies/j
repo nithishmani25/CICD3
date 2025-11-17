@@ -1,0 +1,39 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/example-org/sample-project.git'
+            }
+        }
+
+        stage('Build Project') {
+            steps {
+                // Build command (example using Maven)
+                sh 'mvn clean install'
+            }
+        }
+    }
+
+    post {
+        failure {
+            emailext(
+                to: 'dev-team@example.com',
+                subject: "BUILD FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """
+The Jenkins build has failed.
+
+Job Name : ${env.JOB_NAME}
+Build No : ${env.BUILD_NUMBER}
+Build URL: ${env.BUILD_URL}
+
+Please check the console output and fix the issue.
+                """
+            )
+        }
+    }
+}
+
